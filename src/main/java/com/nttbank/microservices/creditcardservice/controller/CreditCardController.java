@@ -3,8 +3,11 @@ package com.nttbank.microservices.creditcardservice.controller;
 import com.nttbank.microservices.creditcardservice.model.CreditCard;
 import com.nttbank.microservices.creditcardservice.service.CreditCardService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/** Controller class to handle HTTP requests for credit card operations. */
 @RestController
 @RequestMapping("/creditcards")
 @RequiredArgsConstructor
@@ -28,13 +33,12 @@ import reactor.core.publisher.Mono;
 public class CreditCardController {
 
   private final CreditCardService service;
+  private static final Logger logger = LoggerFactory.getLogger(CreditCardController.class);
 
   @GetMapping
   public Mono<ResponseEntity<Flux<CreditCard>>> findAll() {
-    Flux<CreditCard> creditCardList = service.findAll();
-
     return Mono.just(
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(creditCardList))
+            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.findAll()))
         .defaultIfEmpty(ResponseEntity.noContent().build());
   }
 
@@ -55,34 +59,29 @@ public class CreditCardController {
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  @PutMapping("/{creditcard_id}")
-  public Mono<ResponseEntity<CreditCard>> update(@Valid @PathVariable("creditcard_id") String id,
+  @PutMapping
+  public Mono<ResponseEntity<CreditCard>> update(
       @Valid @RequestBody CreditCard creditCard) {
-    creditCard.setId(id);
-
-    Mono<CreditCard> monoBody = Mono.just(creditCard);
-    Mono<CreditCard> monoDb = service.findById(id);
-
-    return monoDb.zipWith(monoBody, (db, c) -> {
-      db.setId(id);
-      db.setCustomerId(c.getCustomerId());
-      db.setCardType(c.getCardType());
-      db.setCreditLimit(c.getCreditLimit());
-      db.setCurrentBalance(c.getCurrentBalance());
-      db.setStatus(c.getStatus());
-      db.setExpirationDate(c.getExpirationDate());
-      db.setIssueDate(c.getIssueDate());
-      db.setInterestRate(c.getInterestRate());
-      return db;
-    }).flatMap(service::update)
-      .map(e -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(e))
-      .defaultIfEmpty(ResponseEntity.notFound().build());
+    return service.update(creditCard)
+        .map(e -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(e))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
   @DeleteMapping("/{creditcard_id}")
   public Mono<ResponseEntity<Void>> delete(@PathVariable("creditcard_id") String id) {
-    return service.findById(id).flatMap(
-            c -> service.delete(c.getId()).thenReturn(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
+    return service.findById(id)
+        .flatMap(c -> service.delete(c.getId())
+            .thenReturn(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/{customer_id}/count")
+  public Mono<ResponseEntity<Long>> totalCreditCardsByCustomer(
+      @PathVariable("customer_id") String customerId,
+      @RequestParam("status") @NotNull String status) {
+    logger.info("Fetching total credit cards by customer with ID: {}", customerId);
+    return service.totalCreditCardsByCustomer(customerId, status)
+        .map(c -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(c))
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 

@@ -4,6 +4,7 @@ import com.nttbank.microservices.creditcardservice.model.CreditCard;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/** Service interface for credit card operations. */
 public interface CreditCardService {
 
   Mono<CreditCard> save(CreditCard t);
@@ -16,4 +17,5 @@ public interface CreditCardService {
 
   Mono<Void> delete(String creditCardId);
 
+  Mono<Long> totalCreditCardsByCustomer(String customerId, String status);
 }

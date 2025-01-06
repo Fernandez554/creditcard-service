@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Implementation of {@link CreditCardService} to handle business logic for credit cards. This
+ * service interacts with the {@link ICreditCardRepo} repository.
+ */
 @Service
 @RequiredArgsConstructor
 public class CreditCardServiceImpl implements CreditCardService {
@@ -20,8 +24,15 @@ public class CreditCardServiceImpl implements CreditCardService {
   }
 
   @Override
-  public Mono<CreditCard> update(CreditCard t) {
-    return repo.save(t);
+  public Mono<CreditCard> update(CreditCard c) {
+    return repo.findById(c.getId()).flatMap(creditCardBd -> {
+      CreditCard updatedCreditCard = CreditCard.builder().id(creditCardBd.getId())
+          .customerId(creditCardBd.getCustomerId()).cardType(creditCardBd.getCardType())
+          .creditLimit(c.getCreditLimit()).currentBalance(c.getCurrentBalance())
+          .expirationDate(c.getExpirationDate()).issueStatementDay(c.getIssueStatementDay())
+          .maintenanceFee(c.getMaintenanceFee()).status(c.getStatus()).build();
+      return repo.save(updatedCreditCard);
+    });
   }
 
   @Override
@@ -38,4 +49,11 @@ public class CreditCardServiceImpl implements CreditCardService {
   public Mono<Void> delete(String creditCardId) {
     return repo.deleteById(creditCardId);
   }
+
+  @Override
+  public Mono<Long> totalCreditCardsByCustomer(String customerId, String status) {
+    return repo.countByCustomerIdAndStatus(customerId, status);
+  }
+
+
 }

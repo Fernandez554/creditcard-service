@@ -1,6 +1,7 @@
 package com.nttbank.microservices.creditcardservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -25,14 +26,25 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 public class CreditCard {
 
+  @EqualsAndHashCode.Include
   @Id
   private String id;
+
+  @NotNull(message = "Customer Identifier cannot be null")
   private String customerId;
+
   private String cardType;
+
+  @NotNull(message = "Credit Limit cannot be null")
   private BigDecimal creditLimit;
   private BigDecimal currentBalance;
-  private String status;
+  @NotNull(message = "Expiration Date cannot be null")
   private LocalDate expirationDate;
-  private LocalDate issueDate;
-  private BigDecimal interestRate;
+
+  @NotNull(message = "Issue Statement Day cannot be null")
+  private String issueStatementDay;
+
+  @NotNull(message = "Maintenance Fee cannot be null")
+  private BigDecimal maintenanceFee;
+  private String status;
 }
