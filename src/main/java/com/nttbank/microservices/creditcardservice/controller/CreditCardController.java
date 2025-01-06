@@ -1,5 +1,7 @@
 package com.nttbank.microservices.creditcardservice.controller;
 
+import com.nttbank.microservices.creditcardservice.dto.CreditCardDTO;
+import com.nttbank.microservices.creditcardservice.mapper.CreditCardMapper;
 import com.nttbank.microservices.creditcardservice.model.CreditCard;
 import com.nttbank.microservices.creditcardservice.service.CreditCardService;
 import jakarta.validation.Valid;
@@ -25,7 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/** Controller class to handle HTTP requests for credit card operations. */
+/**
+ * Controller class to handle HTTP requests for credit card operations.
+ */
 @RestController
 @RequestMapping("/creditcards")
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ import reactor.core.publisher.Mono;
 public class CreditCardController {
 
   private final CreditCardService service;
+  private final CreditCardMapper mapper;
   private static final Logger logger = LoggerFactory.getLogger(CreditCardController.class);
 
   @GetMapping
@@ -51,9 +56,10 @@ public class CreditCardController {
   }
 
   @PostMapping
-  public Mono<ResponseEntity<CreditCard>> save(@Valid @RequestBody CreditCard creditCard,
+  public Mono<ResponseEntity<CreditCard>> save(@Valid @RequestBody CreditCardDTO creditCardDTO,
       final ServerHttpRequest req) {
-    return service.save(creditCard).map(c -> ResponseEntity.created(
+    return service.save(mapper.creditCardDTOToCreditCard(creditCardDTO))
+        .map(c -> ResponseEntity.created(
                 URI.create(req.getURI().toString().concat("/").concat(c.getId())))
             .contentType(MediaType.APPLICATION_JSON).body(c))
         .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -61,8 +67,8 @@ public class CreditCardController {
 
   @PutMapping
   public Mono<ResponseEntity<CreditCard>> update(
-      @Valid @RequestBody CreditCard creditCard) {
-    return service.update(creditCard)
+      @Valid @RequestBody CreditCardDTO creditCardDTO) {
+    return service.update(mapper.creditCardDTOToCreditCard(creditCardDTO))
         .map(e -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(e))
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
@@ -79,7 +85,7 @@ public class CreditCardController {
   public Mono<ResponseEntity<Long>> totalCreditCardsByCustomer(
       @PathVariable("customer_id") String customerId,
       @RequestParam("status") @NotNull String status) {
-    logger.info("Fetching total credit cards by customer with ID: {}", customerId);
+    logger.info("Fetching total credit cards by customer");
     return service.totalCreditCardsByCustomer(customerId, status)
         .map(c -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(c))
         .defaultIfEmpty(ResponseEntity.notFound().build());
