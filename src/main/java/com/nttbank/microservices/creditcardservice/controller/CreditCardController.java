@@ -6,6 +6,9 @@ import com.nttbank.microservices.creditcardservice.model.CreditCard;
 import com.nttbank.microservices.creditcardservice.service.CreditCardService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import java.math.BigDecimal;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -81,6 +84,7 @@ public class CreditCardController {
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
+  //TODO: Cambiar el path de la URL
   @GetMapping("/{customer_id}/count")
   public Mono<ResponseEntity<Long>> totalCreditCardsByCustomer(
       @PathVariable("customer_id") String customerId,
@@ -90,5 +94,23 @@ public class CreditCardController {
         .map(c -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(c))
         .defaultIfEmpty(ResponseEntity.notFound().build());
   }
+
+  @PostMapping("/{creditcard_id}/charge")
+  public Mono<ResponseEntity<CreditCard>> charge(
+      @PathVariable("creditcard_id") String creditCardId,
+      @QueryParam("amount") @NotNull BigDecimal amount) {
+    return service.chargeCreditCard(creditCardId, amount)
+        .map(e -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(e))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
+  @PostMapping("/{creditcard_id}/pay")
+  public Mono<ResponseEntity<CreditCard>> pay(@PathVariable("creditcard_id") String creditCardId,
+      @QueryParam("amount") @NotNull BigDecimal amount) {
+    return service.payCreditCard(creditCardId, amount)
+        .map(e -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(e))
+        .defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
 
 }

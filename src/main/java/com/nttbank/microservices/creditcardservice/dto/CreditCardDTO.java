@@ -1,8 +1,11 @@
 package com.nttbank.microservices.creditcardservice.dto;
 
+import com.nttbank.microservices.creditcardservice.model.CreditCardTransactions;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +35,9 @@ public class CreditCardDTO {
   @NotNull(message = "Maintenance Fee cannot be null")
   private BigDecimal maintenanceFee;
   private String status;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+  private List<CreditCardTransactions> lstCreditCardTransactions;
+
 
 }

@@ -1,6 +1,7 @@
 package com.nttbank.microservices.creditcardservice.service;
 
 import com.nttbank.microservices.creditcardservice.model.CreditCard;
+import java.math.BigDecimal;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,4 +19,8 @@ public interface CreditCardService {
   Mono<Void> delete(String creditCardId);
 
   Mono<Long> totalCreditCardsByCustomer(String customerId, String status);
+
+  Mono<CreditCard> chargeCreditCard(String creditCardId, BigDecimal amount);
+
+  Mono<CreditCard> payCreditCard(String creditCardId, BigDecimal amount);
 }

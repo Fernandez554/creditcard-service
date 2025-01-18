@@ -1,9 +1,12 @@
 package com.nttbank.microservices.creditcardservice.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,12 +32,9 @@ public class CreditCard {
   @EqualsAndHashCode.Include
   @Id
   private String id;
-
   @NotNull(message = "Customer Identifier cannot be null")
   private String customerId;
-
   private String cardType;
-
   @NotNull(message = "Credit Limit cannot be null")
   private BigDecimal creditLimit;
   private BigDecimal currentBalance;
@@ -46,5 +46,9 @@ public class CreditCard {
 
   @NotNull(message = "Maintenance Fee cannot be null")
   private BigDecimal maintenanceFee;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
   private String status;
+  private List<CreditCardTransactions> lstCreditCardTransactions;
+
 }
